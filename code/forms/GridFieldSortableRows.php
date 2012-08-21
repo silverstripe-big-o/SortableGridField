@@ -9,6 +9,17 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 	protected $sortColumn;
 
 	/**
+	 * @var boolean Determines if drag'n'drop should operate
+	 * across pages, or simply disable a paginator component.
+	 * Depends on the number of records managed, disabling pagination
+	 * might not be feasible on high record counts.
+	 *
+	 * Note: Only has an effect if a GridFieldPaginator is applied
+	 * to the underlying GridField instance.
+	 */
+	protected $usePagination = true;
+
+	/**
 	 * @var boolean Force a redraw of the field after drop operations.
 	 * Can be useful if the sort is more complex, and hence
 	 * might be stale after the operation.
@@ -109,10 +120,14 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		if ((!is_bool($state->sortableToggle) || $state->sortableToggle==false) && $headerState && !empty($headerState->SortColumn)) {
 			return $dataList;
 		}
-		
 		if ($state->sortableToggle == true) {
 			$gridField->getConfig()->removeComponentsByType('GridFieldFilterHeader');
 			$gridField->getConfig()->removeComponentsByType('GridFieldSortableHeader');
+			if(!$this->getUsePagination()) {
+				$gridField->getConfig()->removeComponentsByType('GridFieldPaginator');
+				// set an artificial limit, as there's no way to unset a limit in the ORM
+				$dataList->limit(999, 0); 
+			}
 		}
 		
 		
@@ -385,6 +400,16 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 			DB::getConn()->transactionEnd();
 		}
 	}
+
+	public function setUsePagination($bool) {
+		$this->usePagination = $bool;
+		return $this;
+	}
+
+	public function getUsePagination() {
+		return $this->usePagination;
+	}
+
 	public function setForceRedraw($bool) {
 		$this->forceRedraw = $bool;
 		return $this;
