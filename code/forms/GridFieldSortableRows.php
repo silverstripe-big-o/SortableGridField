@@ -5,7 +5,15 @@
  * @package forms
  */
 class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionProvider, GridField_DataManipulator {
+	
 	protected $sortColumn;
+
+	/**
+	 * @var boolean Force a redraw of the field after drop operations.
+	 * Can be useful if the sort is more complex, and hence
+	 * might be stale after the operation.
+	 */
+	protected $forceRedraw = false;
 	
 	/**
 	 * @param String $sortColumn Column that should be used to update the sort information
@@ -76,8 +84,11 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		Requirements::css('SortableGridField/css/GridFieldSortableRows.css');
 		Requirements::javascript('SortableGridField/javascript/GridFieldSortableRows.js');
 		
-		
-		$args = array('Colspan' => count($gridField->getColumns()), 'ID' => $gridField->ID());
+		$args = array(
+			'Colspan' => count($gridField->getColumns()), 
+			'ID' => $gridField->ID(),
+			'ForceRedraw' => $this->getForceRedraw(),
+		);
 		
 		return array('header' => $forTemplate->renderWith('GridFieldSortableRows', $args));
 	}
@@ -373,6 +384,14 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		if(DB::getConn()->supportsTransactions()) {
 			DB::getConn()->transactionEnd();
 		}
+	}
+	public function setForceRedraw($bool) {
+		$this->forceRedraw = $bool;
+		return $this;
+	}
+
+	public function getForceRedraw() {
+		return $this->forceRedraw;
 	}
 }
 ?>

@@ -115,7 +115,13 @@
 					type: "POST",
 					url: gridField.data('url'),
 					dataType: 'html',
-					success: callback,
+					success: function(data) {
+						console.debug(gridField.find('.gridfield-sortablerows').data('forceRedraw'));
+						if(gridField.find('.gridfield-sortablerows').data('forceRedraw')) {
+							gridField.reload();	
+						}
+						if(callback) callback(data);
+					},
 					error: function(e) {
 						alert(ss.i18n._t('GRIDFIELD.ERRORINTRANSACTION'));
 					}
