@@ -131,7 +131,7 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		}
 		
 		
-		return $dataList;
+		return $dataList->sort($this->sortColumn);;
 	}
 	
 	/**
