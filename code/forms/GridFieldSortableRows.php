@@ -92,8 +92,8 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		
 		
 		//Inject Requirements
-		Requirements::css('SortableGridField/css/GridFieldSortableRows.css');
-		Requirements::javascript('SortableGridField/javascript/GridFieldSortableRows.js');
+		Requirements::css('sortablegridfield/css/GridFieldSortableRows.css');
+		Requirements::javascript('sortablegridfield/javascript/GridFieldSortableRows.js');
 		
 		$args = array(
 			'Colspan' => count($gridField->getColumns()), 
