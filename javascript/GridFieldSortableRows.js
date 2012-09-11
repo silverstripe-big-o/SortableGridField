@@ -33,17 +33,16 @@
 							dataRows[i]=$(gridItems[i]).data('id');
 						}
 
-
 						self._makeRequest({data: [
-													{
-														name: button.attr('name'),
-														value: button.val()
-													},
-													{
-														name: 'ItemIDs',
-														value: dataRows
-													}
-												]});
+							{
+								name: button.attr('name'),
+								value: button.val()
+							},
+							{
+								name: 'ItemIDs',
+								value: dataRows
+							}
+						]});
 					}
 				}).disableSelection();
 
@@ -119,7 +118,6 @@
 					url: gridField.data('url'),
 					dataType: 'html',
 					success: function(data) {
-						console.debug(gridField.find('.gridfield-sortablerows').data('forceRedraw'));
 						if(gridField.find('.gridfield-sortablerows').data('forceRedraw')) {
 							gridField.reload();	
 						}
