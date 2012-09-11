@@ -131,7 +131,7 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		}
 		
 		
-		return $dataList->sort($this->sortColumn);;
+		return $dataList->sort($this->sortColumn);
 	}
 	
 	/**
@@ -231,7 +231,7 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		$className = $gridField->getModelClass();
 		$owner = $gridField->Form->getRecord();
 		$items = clone $gridField->getList();
-		$many_many = ($items instanceof ManyManyList);
+		$many_many = ($items instanceof ManyManyList || $items instanceof SearchReindexRelationList);
 		$sortColumn = $this->sortColumn;
 		$pageOffset = 0;
 		
