@@ -224,7 +224,7 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 			throw new ValidationException(_t('GridFieldSortableRows.EditPermissionsFailure', "No edit permissions"),0);
 		}
 		
-		if (empty($data['Items'])) {
+		if (empty($data['ItemIDs'])) {
 			user_error('No items to sort', E_USER_ERROR);
 		}
 		
@@ -256,15 +256,15 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		
 		
 		//@TODO Need to optimize this to eliminate some of the resource load could use raw queries to be more efficient
-		$data['Items'] = explode(',', $data['Items']);
-		for($sort = 0;$sort<count($data['Items']);$sort++) {
-			$id = intval($data['Items'][$sort]);
+		$ids = explode(',', $data['ItemIDs']);
+		for($sort = 0;$sort<count($ids);$sort++) {
+			$id = intval($ids[$sort]);
 			if ($many_many) {
 				DB::query('UPDATE "' . $table
 						. '" SET "' . $sortColumn.'" = ' . (($sort + 1) + $pageOffset)
 						. ' WHERE "' . $componentField . '" = ' . $id . ' AND "' . $parentField . '" = ' . $owner->ID);
 			} else {
-				$obj = $items->byID($data['Items'][$sort]);
+				$obj = $items->byID($ids[$sort]);
 				$obj->$sortColumn = ($sort + 1) + $pageOffset;
 				$obj->write();
 			}

@@ -14,36 +14,39 @@
 				
 				gridField.find('tbody').sortable({
 					opacity: 0.6,
-					disabled: ($(this).is(':checked')===false),
+					disabled: ($(this).is(':checked')==false),
 					helper: function(e, ui) {
 						//Maintains width of the columns
 						ui.children().each(function() {
 							$(this).width($(this).width());
 						});
-						
+
 						return ui;
 					},
 					update: function(event, ui) {
-						var dataRows = [],
-							gridItems = gridField.getItems(),
-							button = refCheckbox.parent().find('.sortablerows-toggle');
-						
+						var dataRows=[];
+						var gridItems=gridField.getItems();
+						var button=refCheckbox.parent().find('.sortablerows-toggle');
+
+
 						for(var i=0;i<gridItems.length;i++) {
-							dataRows[i] = $(gridItems[i]).data('id');
+							dataRows[i]=$(gridItems[i]).data('id');
 						}
-						
+
+
 						self._makeRequest({data: [
-							{
-								name: button.attr('name'),
-								value: button.val()
-							},
-							{
-								name: 'Items',
-								value: dataRows
-							}
-						]});
+													{
+														name: button.attr('name'),
+														value: button.val()
+													},
+													{
+														name: 'ItemIDs',
+														value: dataRows
+													}
+												]});
 					}
 				}).disableSelection();
+
 				
 				gridField.find('.datagrid-pagination .ss-gridfield-previouspage, .datagrid-pagination .ss-gridfield-nextpage').each(function() {
 					$(this).droppable({
