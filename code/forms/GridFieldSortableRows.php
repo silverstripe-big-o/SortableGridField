@@ -151,8 +151,9 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 			$sng=singleton($gridField->getModelClass());
 			$fieldType=$sng->db($this->sortColumn);
 			if(!$fieldType || !($fieldType=='Int' || is_subclass_of('Int', $fieldType))) {
-				user_error('Sort column '.$this->sortColumn.' must be an Int, column is of type '.$fieldType, E_USER_ERROR);
-				exit;
+				throw new InvalidArgumentException(
+					'Sort column ' . $this->sortColumn . ' must be an Int, column is of type ' . $fieldType
+				);
 			}
 		}
 		
@@ -173,9 +174,17 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 				list($parentClass, $componentClass, $parentField, $componentField, $table) = $owner->many_many($gridField->getName());
 				$extraFields=$owner->many_many_extraFields($gridField->getName());
 				
-				if(!$extraFields || !array_key_exists($this->sortColumn, $extraFields) || !($extraFields[$this->sortColumn]=='Int' || is_subclass_of('Int', $extraFields[$this->sortColumn]))) {
-					user_error('Sort column '.$this->sortColumn.' must be an Int, column is of type '.$fieldType, E_USER_ERROR);
-					exit;
+				if(!$extraFields || !array_key_exists($this->sortColumn, $extraFields)) {
+					throw new InvalidArgumentException(
+						'Sort column ' . $this->sortColumn . ' does not exist in many_many_extraFields'
+					);
+				}
+
+				if(!($extraFields[$this->sortColumn]=='Int' || is_subclass_of('Int', $extraFields[$this->sortColumn]))) {
+					throw new InvalidArgumentException(
+						'Sort column ' . $this->sortColumn . ' in many_many_extraField must be an Int, '
+						. 'column is of type ' . $extraFields[$this->sortColumn]
+					);
 				}
 			}
 			
