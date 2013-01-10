@@ -7,7 +7,7 @@
 class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionProvider, GridField_DataManipulator {
 	
 	protected $sortColumn;
-
+	
 	/**
 	 * @var boolean Determines if drag'n'drop should operate
 	 * across pages, or simply disable a paginator component.
@@ -92,8 +92,8 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 		
 		
 		//Inject Requirements
-		Requirements::css('sortablegridfield/css/GridFieldSortableRows.css');
-		Requirements::javascript('sortablegridfield/javascript/GridFieldSortableRows.js');
+		Requirements::css(SORTABLE_GRIDFIELD_BASE . '/css/GridFieldSortableRows.css');
+		Requirements::javascript(SORTABLE_GRIDFIELD_BASE . '/javascript/GridFieldSortableRows.js');
 		
 		$args = array(
 			'Colspan' => count($gridField->getColumns()), 
@@ -127,7 +127,7 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 				$gridField->getConfig()->removeComponentsByType('GridFieldPaginator');
 				// set an artificial limit, as there's no way to unset a limit in the ORM
 				$dataList->limit(999, 0); 
-			}
+		}
 		}
 		
 		
@@ -141,7 +141,22 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 	 */
 	protected function fixSortColumn($gridField, SS_List $dataList) {
 		$list=clone $dataList;
-		$list->dataQuery()->limit(array());
+		$list=$list->alterDataQuery(function($query, SS_List $tmplist) {
+			$query->limit(array());
+			return $query;
+		});
+		
+		$many_many = ($list instanceof ManyManyList);
+		if (!$many_many) {
+			$sng=singleton($gridField->getModelClass());
+			$fieldType=$sng->db($this->sortColumn);
+			if(!$fieldType || !($fieldType=='Int' || is_subclass_of('Int', $fieldType))) {
+				user_error('Sort column '.$this->sortColumn.' must be an Int, column is of type '.$fieldType, E_USER_ERROR);
+				exit;
+			}
+		}
+		
+		
 		$max = $list->Max($this->sortColumn);
 		if($list->where('"'.$this->sortColumn.'"=0')->Count()>0) {
 			//Start transaction if supported
@@ -153,9 +168,15 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 			$owner = $gridField->Form->getRecord();
 			$sortColumn = $this->sortColumn;
 			$i = 1;
-			$many_many = ($list instanceof ManyManyList);
+			
 			if ($many_many) {
 				list($parentClass, $componentClass, $parentField, $componentField, $table) = $owner->many_many($gridField->getName());
+				$extraFields=$owner->many_many_extraFields($gridField->getName());
+				
+				if(!$extraFields || !array_key_exists($this->sortColumn, $extraFields) || !($extraFields[$this->sortColumn]=='Int' || is_subclass_of('Int', $extraFields[$this->sortColumn]))) {
+					user_error('Sort column '.$this->sortColumn.' must be an Int, column is of type '.$fieldType, E_USER_ERROR);
+					exit;
+				}
 			}
 			
 			
@@ -404,7 +425,7 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 	public function setUsePagination($bool) {
 		$this->usePagination = $bool;
 		return $this;
-	}
+}
 
 	public function getUsePagination() {
 		return $this->usePagination;
