@@ -169,10 +169,14 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 			$owner = $gridField->Form->getRecord();
 			$sortColumn = $this->sortColumn;
 			$i = 1;
-			
 			if ($many_many) {
-				list($parentClass, $componentClass, $parentField, $componentField, $table) = $owner->many_many($gridField->getName());
-				$extraFields=$owner->many_many_extraFields($gridField->getName());
+				if($list->hasMethod('getExtraFields')) {
+					// Method only available in later 3.x releases.
+					$extraFields = $list->getExtraFields();
+				} else {
+					// Caution: Assumes that field name = relation name, which isn't always the case.
+					$extraFields = $owner->many_many_extraFields($gridField->getName());
+				}
 				
 				if(!$extraFields || !array_key_exists($this->sortColumn, $extraFields)) {
 					throw new InvalidArgumentException(
@@ -188,18 +192,13 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 				}
 			}
 			
-			
-			//@TODO Need to optimize this to eliminate some of the resource load could use raw queries to be more efficient
 			foreach($list as $obj) {
 				if($many_many) {
-					DB::query('UPDATE "' . $table
-							. '" SET "' . $sortColumn.'" = ' . ($max + $i)
-							. ' WHERE "' . $componentField . '" = ' . $obj->ID . ' AND "' . $parentField . '" = ' . $owner->ID);
-				}else {
+					$list->add($obj, array($sortColumn => $max + $i));
+				} else {
 					$obj->$sortColumn = ($max + $i);
 					$obj->write();
 				}
-				
 				$i++;
 			}
 			
@@ -273,28 +272,19 @@ class GridFieldSortableRows implements GridField_HTMLProvider, GridField_ActionP
 			}
 		}
 		
-		
-		if ($many_many) {
-			list($parentClass, $componentClass, $parentField, $componentField, $table) = $owner->many_many($gridField->getName());
-		}
-		
-		
 		//Start transaction if supported
 		if(DB::getConn()->supportsTransactions()) {
 			DB::getConn()->transactionStart();
 		}
 		
-		
 		//@TODO Need to optimize this to eliminate some of the resource load could use raw queries to be more efficient
 		$ids = explode(',', $data['ItemIDs']);
 		for($sort = 0;$sort<count($ids);$sort++) {
 			$id = intval($ids[$sort]);
+			$obj = $items->byID($ids[$sort]);
 			if ($many_many) {
-				DB::query('UPDATE "' . $table
-						. '" SET "' . $sortColumn.'" = ' . (($sort + 1) + $pageOffset)
-						. ' WHERE "' . $componentField . '" = ' . $id . ' AND "' . $parentField . '" = ' . $owner->ID);
+				$items->add($obj, array($sortColumn => $sort + 1 + $pageOffset));
 			} else {
-				$obj = $items->byID($ids[$sort]);
 				$obj->$sortColumn = ($sort + 1) + $pageOffset;
 				$obj->write();
 			}
